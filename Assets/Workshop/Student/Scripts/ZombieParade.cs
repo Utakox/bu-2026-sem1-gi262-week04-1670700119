@@ -53,22 +53,54 @@ namespace Solution
         IEnumerator MoveParade()
         {
             //0. สร้างหัวงู
+            Parade.AddFirst(this.gameObject);
 
             while (isAlive)
             {
                 // 1. ดึงส่วนแรกของงูออกมา
+                var firstNode = Parade.First;
+                var firstGo  = firstNode.Value;
 
                 // 2. ดึงส่วนสุดท้ายของงูออกมา
+                var lastNode = Parade.Last;
+                var lastGo = lastNode.Value;
              
                 // 3. ลบส่วนสุดท้ายออกจาก LinkedList
+                Parade.RemoveLast();  
 
                 // 5. กำหนดตำแหน่งและทิศทางของส่วนที่ถูกย้ายมาใหม่
                 // ให้ไปอยู่ที่ตำแหน่งของส่วนหัวงู (ซึ่งเพิ่งเคลื่อนที่ไปเมื่อครู่)
+                int toX = 0;
+                int toY = 0;
+
+                moveDirection = RandomizeDirection();
+                toX = (int)firstGo.transform.position.x + (int)moveDirection.x;
+                toY = (int)firstGo.transform.position.y + (int)moveDirection.y;
+
+                while (IsCollision(toX, toY))
+                {
+                    moveDirection = RandomizeDirection();
+                    toX = (int)firstGo.transform.position.x + (int)moveDirection.x;
+                    toY = (int)firstGo.transform.position.y + (int)moveDirection.y;
+                }
    
                 //6. เคลื่อนที่
+                positionX = toX;
+                positionY = toY;
+                lastGo.transform.position = new Vector3(positionX, positionY, 0);
+                if (moveDirection == Vector3.right)
+                {
+                    lastGo.GetComponent<SpriteRenderer>().flipX = false;
+                }
+
+                else if (moveDirection == Vector3.left)
+                {
+                    lastGo.GetComponent<SpriteRenderer>().flipX = true;
+                }
 
                 // 7. เพิ่มส่วนนั้นกลับเข้าไปเป็นส่วนที่สองของ LinkedList
                 // (ซึ่งก็คือส่วนแรกของลำตัว)
+                Parade.AddFirst(lastNode);
 
                 // รอตามเวลาที่กำหนดก่อนการเคลื่อนที่ครั้งต่อไป
                 yield return new WaitForSeconds(moveInterval);
@@ -77,6 +109,10 @@ namespace Solution
         private bool IsCollision(int x, int y)
         {
             // 4. ตรวจสอบสิ่งกีดขวาง
+            if (HasPlacement(x, y))
+            {
+                return true; // มีสิ่งกีดขวาง
+            }
             
             return false;
         }
